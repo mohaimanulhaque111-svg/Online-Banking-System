@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexaBank — Digital Finance Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1f2d45;
+    --accent: #00d4aa;
+    --accent2: #4f8ef7;
+    --accent3: #f59e0b;
+    --danger: #ef4444;
+    --text: #e8edf5;
+    --text-muted: #6b7a99;
+    --text-dim: #3d4d6a;
+    --green: #10b981;
+    --red: #ef4444;
+    --gold: #f59e0b;
+    --purple: #8b5cf6;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-track { background:var(--bg); }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:99px; }
+
+  /* ===== ANIMATED BG ===== */
+  .bg-grid {
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image: linear-gradient(rgba(0,212,170,0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(0,212,170,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  .bg-glow {
+    position:fixed; top:-200px; right:-200px; width:600px; height:600px;
+    background: radial-gradient(circle, rgba(0,212,170,0.06) 0%, transparent 70%);
+    pointer-events:none; z-index:0;
+    animation: glow-pulse 8s ease-in-out infinite;
+  }
+  .bg-glow2 {
+    position:fixed; bottom:-200px; left:-100px; width:500px; height:500px;
+    background: radial-gradient(circle, rgba(79,142,247,0.05) 0%, transparent 70%);
+    pointer-events:none; z-index:0;
+    animation: glow-pulse 10s ease-in-out infinite reverse;
+  }
+  @keyframes glow-pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* ===== PAGE SYSTEM ===== */
+  .page { display:none; min-height:100vh; position:relative; z-index:1; }
+  .page.active { display:flex; }
+
+  /* ===== LOGIN ===== */
+  #loginPage {
+    align-items:center; justify-content:center; padding:20px;
+    animation: fadeIn 0.6s ease;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+  .login-card {
+    width:100%; max-width:440px;
+    background: linear-gradient(135deg, rgba(17,24,39,0.95), rgba(26,34,53,0.9));
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:48px 40px;
+    backdrop-filter:blur(20px);
+    box-shadow: 0 0 0 1px rgba(0,212,170,0.05), 0 40px 80px rgba(0,0,0,0.5);
+    position:relative; overflow:hidden;
+  }
+  .login-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+  .logo-area { text-align:center; margin-bottom:40px; }
+  .logo-icon {
+    width:64px; height:64px; background:linear-gradient(135deg,var(--accent),var(--accent2));
+    border-radius:18px; margin:0 auto 16px; display:flex; align-items:center; justify-content:center;
+    font-size:28px; box-shadow:0 8px 32px rgba(0,212,170,0.3);
+  }
+  .logo-name { font-family:'DM Serif Display',serif; font-size:32px; letter-spacing:-0.5px; }
+  .logo-name span { color:var(--accent); }
+  .logo-sub { color:var(--text-muted); font-size:13px; margin-top:4px; letter-spacing:1.5px; text-transform:uppercase; }
+
+  .form-group { margin-bottom:20px; }
+  .form-label { display:block; font-size:12px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; }
+  .form-input {
+    width:100%; padding:14px 16px; background:rgba(255,255,255,0.03);
+    border:1px solid var(--border); border-radius:12px; color:var(--text);
+    font-family:'DM Sans',sans-serif; font-size:15px;
+    transition:all 0.2s;
+  }
+  .form-input:focus { outline:none; border-color:var(--accent); background:rgba(0,212,170,0.04); box-shadow:0 0 0 3px rgba(0,212,170,0.1); }
+
+  .role-select-group { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:24px; }
+  .role-btn {
+    padding:10px 8px; border:1px solid var(--border); border-radius:10px;
+    background:transparent; color:var(--text-muted); font-size:12px; font-weight:500;
+    cursor:pointer; transition:all 0.2s; text-align:center;
+  }
+  .role-btn.active { border-color:var(--accent); background:rgba(0,212,170,0.1); color:var(--accent); }
+  .role-btn:hover:not(.active) { border-color:var(--text-dim); color:var(--text); }
+
+  .btn-primary {
+    width:100%; padding:16px; background:linear-gradient(135deg,var(--accent),#00b894);
+    border:none; border-radius:12px; color:#0a0e1a; font-weight:700; font-size:15px;
+    cursor:pointer; transition:all 0.2s; letter-spacing:0.3px;
+    font-family:'DM Sans',sans-serif;
+  }
+  .btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(0,212,170,0.35); }
+  .btn-primary:active { transform:translateY(0); }
+
+  .login-hint { text-align:center; margin-top:20px; font-size:13px; color:var(--text-muted); }
+  .login-hint code { font-family:'JetBrains Mono',monospace; color:var(--accent); font-size:12px; }
+
+  .error-msg { color:var(--danger); font-size:13px; text-align:center; margin-top:12px; display:none; }
+
+  /* ===== APP SHELL ===== */
+  #appPage { flex-direction:row; }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    width:260px; min-height:100vh; background:var(--surface);
+    border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+    position:sticky; top:0; height:100vh;
+    overflow-y:auto;
+    flex-shrink:0;
+  }
+  .sidebar-logo {
+    padding:28px 24px 20px;
+    border-bottom:1px solid var(--border);
+  }
+  .sidebar-logo-inner { display:flex; align-items:center; gap:12px; }
+  .sidebar-logo-icon {
+    width:40px; height:40px; background:linear-gradient(135deg,var(--accent),var(--accent2));
+    border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px;
+    flex-shrink:0;
+  }
+  .sidebar-logo-text { font-family:'DM Serif Display',serif; font-size:22px; }
+  .sidebar-logo-text span { color:var(--accent); }
+
+  .sidebar-role-badge {
+    margin:16px 24px;
+    padding:8px 12px; border-radius:8px; font-size:11px; font-weight:600;
+    letter-spacing:0.8px; text-transform:uppercase; text-align:center;
+  }
+  .badge-customer { background:rgba(0,212,170,0.1); color:var(--accent); border:1px solid rgba(0,212,170,0.2); }
+  .badge-admin { background:rgba(79,142,247,0.1); color:var(--accent2); border:1px solid rgba(79,142,247,0.2); }
+  .badge-auditor { background:rgba(245,158,11,0.1); color:var(--gold); border:1px solid rgba(245,158,11,0.2); }
+  .badge-support { background:rgba(139,92,246,0.1); color:var(--purple); border:1px solid rgba(139,92,246,0.2); }
+
+  .sidebar-nav { padding:8px 12px; flex:1; }
+  .nav-section-label {
+    font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;
+    color:var(--text-dim); padding:12px 12px 6px;
+  }
+  .nav-item {
+    display:flex; align-items:center; gap:12px; padding:10px 12px;
+    border-radius:10px; cursor:pointer; transition:all 0.15s;
+    color:var(--text-muted); font-size:14px; font-weight:500; margin-bottom:2px;
+  }
+  .nav-item:hover { background:rgba(255,255,255,0.04); color:var(--text); }
+  .nav-item.active { background:rgba(0,212,170,0.1); color:var(--accent); }
+  .nav-icon { width:18px; text-align:center; flex-shrink:0; }
+
+  .sidebar-user {
+    padding:16px 24px; border-top:1px solid var(--border);
+    display:flex; align-items:center; gap:12px;
+  }
+  .user-avatar {
+    width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; color:#0a0e1a;
+    flex-shrink:0;
+  }
+  .user-info { flex:1; min-width:0; }
+  .user-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .user-id { font-size:11px; color:var(--text-muted); font-family:'JetBrains Mono',monospace; }
+  .logout-btn {
+    width:28px; height:28px; border:none; background:transparent; cursor:pointer;
+    color:var(--text-muted); font-size:16px; border-radius:6px; transition:all 0.15s;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .logout-btn:hover { background:rgba(239,68,68,0.1); color:var(--danger); }
+
+  /* ===== MAIN CONTENT ===== */
+  .main-content { flex:1; overflow-y:auto; min-height:100vh; }
+
+  .content-panel { display:none; padding:32px; }
+  .content-panel.active { display:block; animation: panelIn 0.3s ease; }
+  @keyframes panelIn { from{opacity:0;transform:translateX(8px)} to{opacity:1;transform:translateX(0)} }
+
+  .panel-header { margin-bottom:28px; }
+  .panel-title { font-family:'DM Serif Display',serif; font-size:28px; margin-bottom:6px; }
+  .panel-subtitle { color:var(--text-muted); font-size:14px; }
+
+  /* ===== CARDS ===== */
+  .card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:24px;
+    transition:border-color 0.2s;
+  }
+  .card:hover { border-color:rgba(255,255,255,0.1); }
+  .card-title { font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); margin-bottom:12px; }
+
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
+  .stat-card {
+    background:var(--surface2); border:1px solid var(--border); border-radius:16px; padding:20px;
+    position:relative; overflow:hidden;
+  }
+  .stat-card::after {
+    content:''; position:absolute; right:-20px; top:-20px;
+    width:80px; height:80px; border-radius:50%;
+    opacity:0.07;
+  }
+  .stat-card.green::after { background:var(--green); }
+  .stat-card.blue::after { background:var(--accent2); }
+  .stat-card.gold::after { background:var(--gold); }
+  .stat-card.purple::after { background:var(--purple); }
+  .stat-label { font-size:11px; font-weight:600; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; }
+  .stat-value { font-family:'DM Serif Display',serif; font-size:28px; }
+  .stat-value.green { color:var(--green); }
+  .stat-value.blue { color:var(--accent2); }
+  .stat-value.gold { color:var(--gold); }
+  .stat-value.purple { color:var(--purple); }
+  .stat-change { font-size:12px; color:var(--text-muted); margin-top:4px; }
+  .stat-icon { font-size:24px; margin-bottom:12px; }
+
+  /* ===== BALANCE CARD ===== */
+  .balance-card {
+    background:linear-gradient(135deg,#0d2033,#0a1929,#0d1f3c);
+    border:1px solid rgba(0,212,170,0.15);
+    border-radius:20px; padding:28px 32px;
+    position:relative; overflow:hidden; margin-bottom:24px;
+  }
+  .balance-card::before {
+    content:''; position:absolute; top:-40px; right:-40px;
+    width:200px; height:200px; border-radius:50%;
+    background:radial-gradient(circle,rgba(0,212,170,0.12),transparent 70%);
+  }
+  .balance-card-label { font-size:12px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:rgba(0,212,170,0.7); margin-bottom:8px; }
+  .balance-amount { font-family:'DM Serif Display',serif; font-size:48px; color:#fff; }
+  .balance-amount .cents { font-size:28px; color:rgba(255,255,255,0.6); }
+  .balance-info { display:flex; gap:32px; margin-top:20px; }
+  .balance-info-item { }
+  .balance-info-label { font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:3px; }
+  .balance-info-value { font-size:14px; font-weight:600; font-family:'JetBrains Mono',monospace; }
+
+  /* ===== TABLE ===== */
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-muted); padding:12px 16px; border-bottom:1px solid var(--border); }
+  td { padding:14px 16px; font-size:14px; border-bottom:1px solid rgba(31,45,69,0.5); vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(255,255,255,0.02); }
+  .amount-positive { color:var(--green); font-family:'JetBrains Mono',monospace; font-weight:600; }
+  .amount-negative { color:var(--red); font-family:'JetBrains Mono',monospace; font-weight:600; }
+
+  .badge {
+    display:inline-flex; align-items:center; padding:3px 10px;
+    border-radius:6px; font-size:11px; font-weight:600; letter-spacing:0.3px;
+  }
+  .badge-success { background:rgba(16,185,129,0.12); color:var(--green); }
+  .badge-warning { background:rgba(245,158,11,0.12); color:var(--gold); }
+  .badge-danger { background:rgba(239,68,68,0.12); color:var(--red); }
+  .badge-info { background:rgba(79,142,247,0.12); color:var(--accent2); }
+
+  /* ===== FORMS ===== */
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .form-group-app { margin-bottom:18px; }
+  .form-label-app { display:block; font-size:12px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-muted); margin-bottom:7px; }
+  .form-input-app {
+    width:100%; padding:12px 16px; background:rgba(255,255,255,0.03);
+    border:1px solid var(--border); border-radius:10px; color:var(--text);
+    font-family:'DM Sans',sans-serif; font-size:14px; transition:all 0.2s;
+  }
+  .form-input-app:focus { outline:none; border-color:var(--accent); background:rgba(0,212,170,0.04); box-shadow:0 0 0 3px rgba(0,212,170,0.1); }
+  select.form-input-app { cursor:pointer; }
+  select.form-input-app option { background:var(--surface); }
+
+  .btn {
+    padding:12px 24px; border:none; border-radius:10px; cursor:pointer;
+    font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600;
+    transition:all 0.2s; display:inline-flex; align-items:center; gap:8px;
+  }
+  .btn-accent { background:linear-gradient(135deg,var(--accent),#00b894); color:#0a0e1a; }
+  .btn-accent:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,212,170,0.3); }
+  .btn-blue { background:linear-gradient(135deg,var(--accent2),#3b82f6); color:#fff; }
+  .btn-blue:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(79,142,247,0.3); }
+  .btn-danger { background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.2); }
+  .btn-danger:hover { background:rgba(239,68,68,0.2); }
+  .btn-ghost { background:transparent; color:var(--text-muted); border:1px solid var(--border); }
+  .btn-ghost:hover { border-color:var(--text-muted); color:var(--text); }
+  .btn-sm { padding:7px 14px; font-size:12px; }
+
+  /* ===== TOAST ===== */
+  #toast {
+    position:fixed; bottom:32px; right:32px; z-index:1000;
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:12px; padding:14px 20px; min-width:280px;
+    display:none; align-items:center; gap:12px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.4);
+    animation: toastIn 0.3s ease;
+  }
+  @keyframes toastIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .toast-icon { font-size:20px; }
+  .toast-text { font-size:14px; font-weight:500; }
+  #toast.success { border-color:rgba(16,185,129,0.3); }
+  #toast.error { border-color:rgba(239,68,68,0.3); }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display:none; position:fixed; inset:0; z-index:500;
+    background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);
+    align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-overlay.active { display:flex; }
+  .modal {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:20px; padding:32px; width:100%; max-width:500px;
+    animation: fadeIn 0.3s ease;
+    position:relative;
+  }
+  .modal-title { font-family:'DM Serif Display',serif; font-size:24px; margin-bottom:20px; }
+  .modal-close {
+    position:absolute; top:16px; right:16px; width:32px; height:32px;
+    background:transparent; border:1px solid var(--border); border-radius:8px;
+    cursor:pointer; color:var(--text-muted); font-size:16px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .modal-close:hover { background:rgba(255,255,255,0.05); color:var(--text); }
+
+  /* ===== CHART BAR ===== */
+  .mini-chart { display:flex; align-items:flex-end; gap:4px; height:60px; margin-top:16px; }
+  .mini-bar { flex:1; border-radius:3px 3px 0 0; transition:height 0.5s ease; min-height:4px; }
+
+  /* ===== FILTER ROW ===== */
+  .filter-row { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; align-items:center; }
+
+  /* ===== PROFILE ===== */
+  .profile-header {
+    display:flex; align-items:center; gap:24px; padding:24px;
+    background:var(--surface2); border-radius:16px; margin-bottom:24px;
+    border:1px solid var(--border);
+  }
+  .profile-avatar-big {
+    width:72px; height:72px; border-radius:18px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:flex; align-items:center; justify-content:center;
+    font-family:'DM Serif Display',serif; font-size:28px; color:#0a0e1a; flex-shrink:0;
+  }
+  .profile-name { font-family:'DM Serif Display',serif; font-size:24px; }
+  .profile-meta { font-size:13px; color:var(--text-muted); margin-top:4px; }
+  .profile-tags { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+
+  /* ===== AUDIT LOG ===== */
+  .audit-entry { display:flex; gap:16px; padding:14px 0; border-bottom:1px solid rgba(31,45,69,0.5); }
+  .audit-dot { width:8px; height:8px; border-radius:50%; margin-top:6px; flex-shrink:0; }
+  .audit-time { font-size:11px; font-family:'JetBrains Mono',monospace; color:var(--text-muted); }
+  .audit-action { font-size:14px; }
+
+  /* ===== RESPONSIVE ===== */
+  @media(max-width:768px){
+    .sidebar { width:60px; }
+    .sidebar-logo-text, .nav-item span, .sidebar-role-badge, .user-info { display:none; }
+    .sidebar-logo-inner { justify-content:center; }
+    .sidebar-user { justify-content:center; }
+    .nav-item { justify-content:center; padding:10px; }
+    .content-panel { padding:16px; }
+    .form-row { grid-template-columns:1fr; }
+    .balance-amount { font-size:32px; }
+    .stats-grid { grid-template-columns:1fr 1fr; }
+  }
+
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media(max-width:900px){ .two-col { grid-template-columns:1fr; } }
+
+  .divider { height:1px; background:var(--border); margin:20px 0; }
+
+  .text-mono { font-family:'JetBrains Mono',monospace; font-size:13px; }
+  .text-muted { color:var(--text-muted); }
+  .flex-between { display:flex; align-items:center; justify-content:space-between; }
+
+  .transfer-step { display:none; }
+  .transfer-step.active { display:block; }
+
+  .confirm-box {
+    background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:20px; margin:16px 0;
+  }
+  .confirm-row { display:flex; justify-content:space-between; padding:6px 0; font-size:14px; }
+  .confirm-row:not(:last-child) { border-bottom:1px solid rgba(31,45,69,0.5); }
+
+  .search-input {
+    padding:10px 16px; background:rgba(255,255,255,0.03);
+    border:1px solid var(--border); border-radius:10px; color:var(--text);
+    font-family:'DM Sans',sans-serif; font-size:14px; width:220px;
+  }
+  .search-input:focus { outline:none; border-color:var(--accent); }
+
+  .account-status-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; }
+  .dot-green { background:var(--green); box-shadow:0 0 6px var(--green); }
+  .dot-red { background:var(--red); }
+  .dot-yellow { background:var(--gold); }
+
+  .analytics-bar-chart { margin-top:16px; }
+  .bar-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .bar-label { font-size:12px; color:var(--text-muted); width:100px; flex-shrink:0; text-align:right; }
+  .bar-track { flex:1; height:10px; background:rgba(255,255,255,0.05); border-radius:99px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:99px; transition:width 1s ease; }
+  .bar-val { font-size:12px; font-family:'JetBrains Mono',monospace; color:var(--text-muted); width:70px; }
+
+  .compliance-tag {
+    display:inline-flex; align-items:center; gap:6px; padding:4px 12px;
+    border-radius:6px; font-size:11px; font-weight:700; letter-spacing:0.5px;
+    background:rgba(16,185,129,0.1); color:var(--green); border:1px solid rgba(16,185,129,0.2);
+  }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<div class="bg-glow2"></div>
+
+<!-- ===================== LOGIN PAGE ===================== -->
+<div class="page active" id="loginPage">
+  <div class="login-card">
+    <div class="logo-area">
+      <div class="logo-icon">🏦</div>
+      <div class="logo-name">Nexa<span>Bank</span></div>
+      <div class="logo-sub">Digital Finance Platform</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <input class="form-input" id="loginUsername" type="text" placeholder="Enter username" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" id="loginPassword" type="password" placeholder="Enter password" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Login As</label>
+      <div class="role-select-group">
+        <button class="role-btn active" onclick="selectRole(this,'customer')">👤 Customer</button>
+        <button class="role-btn" onclick="selectRole(this,'admin')">🛡️ Admin</button>
+        <button class="role-btn" onclick="selectRole(this,'auditor')">📊 Auditor</button>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Sign In →</button>
+    <div class="error-msg" id="loginError">Invalid credentials. Try Sabbir / Sabbir</div>
+    <div class="login-hint">Demo: <code>Sabbir</code> / <code>Sabbir</code></div>
+  </div>
+</div>
+
+<!-- ===================== APP PAGE ===================== -->
+<div class="page" id="appPage">
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-inner">
+        <div class="sidebar-logo-icon">🏦</div>
+        <div class="sidebar-logo-text">Nexa<span>Bank</span></div>
+      </div>
+    </div>
+    <div class="sidebar-role-badge" id="roleBadge">Customer</div>
+    <div class="sidebar-nav" id="sidebarNav"></div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userAvatar">S</div>
+      <div class="user-info">
+        <div class="user-name" id="userNameDisplay">Sabbir</div>
+        <div class="user-id" id="userIdDisplay">ACC-2354934</div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()" title="Logout">⏻</button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main-content" id="mainContent"></main>
+</div>
+
+<!-- TOAST -->
+<div id="toast">
+  <span class="toast-icon" id="toastIcon">✅</span>
+  <span class="toast-text" id="toastText"></span>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalBox">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+// ===================== STATE =====================
+let currentRole = 'customer';
+let currentPanel = '';
+
+const USERS = {
+  customer: { name:'Sabbir Hossain', id:'ACC-2354934', balance:125480.75, savings:42300.00, username:'Sabbir', password:'Sabbir' },
+  admin: { name:'Sabbir (Admin)', id:'ADM-0001', username:'Sabbir', password:'Sabbir' },
+  auditor: { name:'Sabbir (Auditor)', id:'AUD-0001', username:'Sabbir', password:'Sabbir' }
+};
+
+const TRANSACTIONS = [
+  { id:'TXN001', date:'2026-04-24', desc:'Salary Credit', type:'Credit', amount:45000, status:'Completed', account:'ACC-2354934' },
+  { id:'TXN002', date:'2026-04-23', desc:'Electricity Bill', type:'Debit', amount:-1200, status:'Completed', account:'ACC-2354934' },
+  { id:'TXN003', date:'2026-04-22', desc:'Transfer to Hoque', type:'Debit', amount:-5000, status:'Completed', account:'ACC-2354934' },
+  { id:'TXN004', date:'2026-04-21', desc:'Online Purchase', type:'Debit', amount:-3500, status:'Completed', account:'ACC-2354934' },
+  { id:'TXN005', date:'2026-04-20', desc:'Received from Tasfin', type:'Credit', amount:12000, status:'Completed', account:'ACC-2354934' },
+  { id:'TXN006', date:'2026-04-19', desc:'Internet Bill', type:'Debit', amount:-700, status:'Completed', account:'ACC-2354934' },
+  { id:'TXN007', date:'2026-04-18', desc:'Mobile Recharge', type:'Debit', amount:-500, status:'Completed', account:'ACC-2354934' },
+  { id:'TXN008', date:'2026-04-17', desc:'Dividend Credit', type:'Credit', amount:3200, status:'Completed', account:'ACC-2354934' },
+];
+
+const ALL_ACCOUNTS = [
+  { id:'ACC-2354934', name:'Sheikh Md Sabbir Hossain', type:'Savings', balance:125480.75, status:'Active', joined:'2023-01-15' },
+  { id:'ACC-5637701', name:'Md Mohaimanul Haque', type:'Current', balance:89200.00, status:'Active', joined:'2024-03-12' },
+  { id:'ACC-5637201', name:'Md Sifat Hassan', type:'Savings', balance:45000.00, status:'Active', joined:'2024-03-12' },
+  { id:'ACC-5562403', name:'Abid Arman Saif', type:'Current', balance:210000.00, status:'Suspended', joined:'2023-06-20' },
+  { id:'ACC-5241102', name:'Yasir Zaman Tasfin', type:'Savings', balance:67500.00, status:'Active', joined:'2023-09-08' },
+  { id:'ACC-1234567', name:'Rahman Ahmed', type:'Savings', balance:15200.00, status:'Pending', joined:'2026-04-20' },
+];
+
+const AUDIT_LOG = [
+  { time:'2026-04-25 09:15:22', action:'User ACC-2354934 logged in from Dhaka, BD', type:'info' },
+  { time:'2026-04-25 09:18:44', action:'Fund transfer TXN001 initiated: ৳5,000 to ACC-5637701', type:'info' },
+  { time:'2026-04-25 09:18:46', action:'Transaction TXN001 approved and completed', type:'success' },
+  { time:'2026-04-24 14:30:11', action:'High-value transfer flagged: ৳210,000 from ACC-5562403 — Pending review', type:'warning' },
+  { time:'2026-04-24 11:05:33', action:'Account ACC-1234567 created pending approval', type:'info' },
+  { time:'2026-04-23 16:45:09', action:'Account ACC-5562403 suspended due to suspicious activity', type:'danger' },
+  { time:'2026-04-22 10:00:00', action:'Compliance report generated by AUD-0001', type:'info' },
+  { time:'2026-04-21 08:55:12', action:'System backup completed successfully', type:'success' },
+];
+
+let userBalance = 125480.75;
+let txnList = [...TRANSACTIONS];
+let accountList = [...ALL_ACCOUNTS];
+
+// ===================== AUTH =====================
+function selectRole(btn, role) {
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentRole = role;
+}
+
+function doLogin() {
+  const u = document.getElementById('loginUsername').value.trim();
+  const p = document.getElementById('loginPassword').value.trim();
+  if(u==='Sabbir' && p==='Sabbir') {
+    document.getElementById('loginPage').classList.remove('active');
+    document.getElementById('appPage').classList.add('active');
+    initApp();
+  } else {
+    document.getElementById('loginError').style.display='block';
+    document.getElementById('loginPassword').style.borderColor='var(--danger)';
+  }
+}
+document.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function doLogout() {
+  document.getElementById('appPage').classList.remove('active');
+  document.getElementById('loginPage').classList.add('active');
+  document.getElementById('loginPassword').value='';
+  document.getElementById('loginError').style.display='none';
+  document.getElementById('loginPassword').style.borderColor='';
+}
+
+// ===================== APP INIT =====================
+function initApp() {
+  const user = USERS[currentRole];
+  document.getElementById('userAvatar').textContent = user.name.charAt(0);
+  document.getElementById('userNameDisplay').textContent = user.name;
+  document.getElementById('userIdDisplay').textContent = user.id;
+
+  const badge = document.getElementById('roleBadge');
+  badge.className = 'sidebar-role-badge badge-'+currentRole;
+  badge.textContent = currentRole.charAt(0).toUpperCase()+currentRole.slice(1);
+
+  buildSidebar();
+}
+
+const NAV = {
+  customer: [
+    { id:'dashboard', icon:'⬛', label:'Dashboard' },
+    { id:'transfer', icon:'↗', label:'Fund Transfer' },
+    { id:'history', icon:'🕐', label:'Transactions' },
+    { id:'statements', icon:'📄', label:'Statements' },
+    { id:'profile', icon:'👤', label:'Profile' },
+  ],
+  admin: [
+    { id:'adashboard', icon:'📊', label:'Dashboard' },
+    { id:'accounts', icon:'👥', label:'Manage Accounts' },
+    { id:'pendingTx', icon:'⏳', label:'Pending Transfers' },
+    { id:'fraud', icon:'🚨', label:'Fraud Monitor' },
+    { id:'analytics', icon:'📈', label:'Analytics' },
+    { id:'profile', icon:'👤', label:'Profile' },
+  ],
+  auditor: [
+    { id:'alogsPanel', icon:'📋', label:'Audit Logs' },
+    { id:'compliance', icon:'✅', label:'Compliance' },
+    { id:'reportGen', icon:'📑', label:'Generate Report' },
+    { id:'profile', icon:'👤', label:'Profile' },
+  ]
+};
+
+function buildSidebar() {
+  const nav = document.getElementById('sidebarNav');
+  const items = NAV[currentRole];
+  nav.innerHTML = '<div class="nav-section-label">Navigation</div>';
+  items.forEach(item => {
+    nav.innerHTML += `<div class="nav-item" id="nav-${item.id}" onclick="showPanel('${item.id}')">
+      <span class="nav-icon">${item.icon}</span><span>${item.label}</span>
+    </div>`;
+  });
+  showPanel(items[0].id);
+}
+
+function showPanel(id) {
+  currentPanel = id;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const nav = document.getElementById('nav-'+id);
+  if(nav) nav.classList.add('active');
+
+  const main = document.getElementById('mainContent');
+  document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+
+  let el = document.getElementById('panel-'+id);
+  if(!el) {
+    el = document.createElement('div');
+    el.className='content-panel active';
+    el.id='panel-'+id;
+    el.innerHTML = buildPanel(id);
+    main.appendChild(el);
+    setTimeout(()=>initPanel(id),50);
+  } else {
+    el.classList.add('active');
+    initPanel(id);
+  }
+}
+
+// ===================== PANEL BUILDER =====================
+function buildPanel(id) {
+  switch(id) {
+    case 'dashboard': return buildCustomerDash();
+    case 'transfer': return buildTransfer();
+    case 'history': return buildHistory();
+    case 'statements': return buildStatements();
+    case 'profile': return buildProfile();
+    case 'adashboard': return buildAdminDash();
+    case 'accounts': return buildAccounts();
+    case 'pendingTx': return buildPendingTx();
+    case 'fraud': return buildFraud();
+    case 'analytics': return buildAnalytics();
+    case 'alogsPanel': return buildAuditLogs();
+    case 'compliance': return buildCompliance();
+    case 'reportGen': return buildReportGen();
+    default: return '<div class="content-panel"><p>Panel not found.</p></div>';
+  }
+}
+
+function initPanel(id) {
+  if(id==='history') renderTxnTable(txnList);
+  if(id==='accounts') renderAccountTable(accountList);
+  if(id==='fraud') initFraudChart();
+  if(id==='analytics') initAnalyticsChart();
+}
+
+// ===== CUSTOMER DASHBOARD =====
+function buildCustomerDash() {
+  return `
+  <div class="panel-header">
+    <div class="panel-title">Good morning, Sabbir 👋</div>
+    <div class="panel-subtitle">Here's your financial overview for today, ${new Date().toLocaleDateString('en-BD',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
+  </div>
+
+  <div class="balance-card">
+    <div class="balance-card-label">Current Balance</div>
+    <div class="balance-amount" id="liveBalance">৳ ${fmt(userBalance)}</div>
+    <div class="balance-info">
+      <div class="balance-info-item">
+        <div class="balance-info-label">Account Number</div>
+        <div class="balance-info-value">ACC-2354934</div>
+      </div>
+      <div class="balance-info-item">
+        <div class="balance-info-label">Account Type</div>
+        <div class="balance-info-value">Savings</div>
+      </div>
+      <div class="balance-info-item">
+        <div class="balance-info-label">Status</div>
+        <div class="balance-info-value" style="color:var(--green)">● Active</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card green">
+      <div class="stat-icon">📥</div>
+      <div class="stat-label">Total Credits (Apr)</div>
+      <div class="stat-value green">৳60,200</div>
+      <div class="stat-change">↑ 12% from last month</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon">📤</div>
+      <div class="stat-label">Total Debits (Apr)</div>
+      <div class="stat-value blue">৳10,900</div>
+      <div class="stat-change">↓ 5% from last month</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-icon">💼</div>
+      <div class="stat-label">Savings Account</div>
+      <div class="stat-value gold">৳42,300</div>
+      <div class="stat-change">Interest: 5.5% p.a.</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-icon">🔄</div>
+      <div class="stat-label">Transactions (Apr)</div>
+      <div class="stat-value purple">8</div>
+      <div class="stat-change">Last: 2 hours ago</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Recent Transactions</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Description</th><th>Amount</th></tr></thead>
+          <tbody>
+            ${txnList.slice(0,5).map(t=>`<tr>
+              <td class="text-muted" style="font-size:12px">${t.date}</td>
+              <td>${t.desc}</td>
+              <td class="${t.amount>0?'amount-positive':'amount-negative'}">${t.amount>0?'+':''}৳${Math.abs(t.amount).toLocaleString()}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Spending Overview</div>
+      <div class="analytics-bar-chart">
+        <div class="bar-row"><span class="bar-label">Bills</span><div class="bar-track"><div class="bar-fill" style="width:45%;background:var(--accent2)"></div></div><span class="bar-val">৳1,900</span></div>
+        <div class="bar-row"><span class="bar-label">Shopping</span><div class="bar-track"><div class="bar-fill" style="width:75%;background:var(--accent)"></div></div><span class="bar-val">৳3,500</span></div>
+        <div class="bar-row"><span class="bar-label">Transfers</span><div class="bar-track"><div class="bar-fill" style="width:60%;background:var(--gold)"></div></div><span class="bar-val">৳5,000</span></div>
+        <div class="bar-row"><span class="bar-label">Mobile</span><div class="bar-track"><div class="bar-fill" style="width:15%;background:var(--purple)"></div></div><span class="bar-val">৳500</span></div>
+      </div>
+      <div class="divider"></div>
+      <button class="btn btn-ghost btn-sm" onclick="showPanel('history')">View All Transactions →</button>
+    </div>
+  </div>`;
+}
+
+// ===== TRANSFER =====
+function buildTransfer() {
+  return `
+  <div class="panel-header">
+    <div class="panel-title">Fund Transfer</div>
+    <div class="panel-subtitle">Securely transfer funds to other NexaBank accounts</div>
+  </div>
+  <div style="max-width:560px">
+    <div class="card">
+      <div id="txStep1" class="transfer-step active">
+        <div class="card-title">Transfer Details</div>
+        <div class="form-group-app">
+          <label class="form-label-app">Recipient Account Number</label>
+          <select class="form-input-app" id="txRecipient">
+            <option value="">— Select Account —</option>
+            <option value="ACC-5637701">ACC-5637701 — Md Mohaimanul Haque</option>
+            <option value="ACC-5637201">ACC-5637201 — Md Sifat Hassan</option>
+            <option value="ACC-5241102">ACC-5241102 — Yasir Zaman Tasfin</option>
+          </select>
+        </div>
+        <div class="form-group-app">
+          <label class="form-label-app">Amount (BDT ৳)</label>
+          <input class="form-input-app" id="txAmount" type="number" placeholder="Enter amount" min="1" />
+        </div>
+        <div class="form-group-app">
+          <label class="form-label-app">Transfer Note (Optional)</label>
+          <input class="form-input-app" id="txNote" type="text" placeholder="e.g. Rent, Project payment..." />
+        </div>
+        <div class="form-group-app">
+          <label class="form-label-app">Transfer Type</label>
+          <select class="form-input-app" id="txType">
+            <option value="Instant">Instant Transfer (Real-time)</option>
+            <option value="Scheduled">Scheduled Transfer</option>
+          </select>
+        </div>
+        <div style="background:rgba(0,212,170,0.05);border:1px solid rgba(0,212,170,0.15);border-radius:10px;padding:14px;margin-bottom:18px;">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">Available Balance</div>
+          <div style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--accent)" id="txBalanceDisplay">৳ ${fmt(userBalance)}</div>
+        </div>
+        <button class="btn btn-accent" onclick="txNext()">Review Transfer →</button>
+      </div>
+      <div id="txStep2" class="transfer-step">
+        <div class="card-title">Confirm Transfer</div>
+        <div class="confirm-box" id="txConfirmBox"></div>
+        <div style="display:flex;gap:12px;margin-top:16px">
+          <button class="btn btn-ghost" onclick="txBack()">← Back</button>
+          <button class="btn btn-accent" onclick="txConfirm()">✔ Confirm Transfer</button>
+        </div>
+      </div>
+      <div id="txStep3" class="transfer-step">
+        <div style="text-align:center;padding:20px 0">
+          <div style="font-size:56px;margin-bottom:16px">✅</div>
+          <div style="font-family:'DM Serif Display',serif;font-size:24px;margin-bottom:8px">Transfer Successful</div>
+          <div style="color:var(--text-muted);font-size:14px;margin-bottom:24px">Your transaction has been processed securely.</div>
+          <div class="confirm-box" id="txReceiptBox"></div>
+          <div style="margin-top:20px;display:flex;gap:12px;justify-content:center">
+            <button class="btn btn-ghost" onclick="txReset()">New Transfer</button>
+            <button class="btn btn-accent" onclick="showPanel('history')">View Transactions</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function txNext() {
+  const rec = document.getElementById('txRecipient').value;
+  const amt = parseFloat(document.getElementById('txAmount').value);
+  const note = document.getElementById('txNote').value || 'N/A';
+  const type = document.getElementById('txType').value;
+  if(!rec){ showToast('Please select a recipient', 'error'); return; }
+  if(!amt||amt<=0){ showToast('Enter a valid amount', 'error'); return; }
+  if(amt>userBalance){ showToast('Insufficient balance!', 'error'); return; }
+  const recName = document.getElementById('txRecipient').selectedOptions[0].text.split('—')[1].trim();
+  document.getElementById('txConfirmBox').innerHTML = `
+    <div class="confirm-row"><span class="text-muted">From</span><span class="text-mono">ACC-2354934</span></div>
+    <div class="confirm-row"><span class="text-muted">To</span><span class="text-mono">${rec}</span></div>
+    <div class="confirm-row"><span class="text-muted">Recipient</span><span>${recName}</span></div>
+    <div class="confirm-row"><span class="text-muted">Amount</span><span style="color:var(--accent);font-weight:700">৳ ${amt.toLocaleString()}</span></div>
+    <div class="confirm-row"><span class="text-muted">Note</span><span>${note}</span></div>
+    <div class="confirm-row"><span class="text-muted">Type</span><span>${type}</span></div>
+    <div class="confirm-row"><span class="text-muted">After Balance</span><span style="color:var(--green)">৳ ${fmt(userBalance-amt)}</span></div>`;
+  document.getElementById('txStep1').classList.remove('active');
+  document.getElementById('txStep2').classList.add('active');
+}
+function txBack() {
+  document.getElementById('txStep2').classList.remove('active');
+  document.getElementById('txStep1').classList.add('active');
+}
+function txConfirm() {
+  const amt = parseFloat(document.getElementById('txAmount').value);
+  const rec = document.getElementById('txRecipient').value;
+  const note = document.getElementById('txNote').value || 'Fund Transfer';
+  const recName = document.getElementById('txRecipient').selectedOptions[0].text.split('—')[1].trim();
+  userBalance -= amt;
+  const txId = 'TXN'+String(txnList.length+1).padStart(3,'0');
+  txnList.unshift({ id:txId, date:new Date().toISOString().slice(0,10), desc:`Transfer to ${recName}`, type:'Debit', amount:-amt, status:'Completed', account:'ACC-2354934' });
+  const receipt = `<div class="confirm-row"><span class="text-muted">Transaction ID</span><span class="text-mono" style="color:var(--accent)">${txId}</span></div>
+    <div class="confirm-row"><span class="text-muted">Amount Debited</span><span style="color:var(--red);font-weight:700">৳ ${amt.toLocaleString()}</span></div>
+    <div class="confirm-row"><span class="text-muted">New Balance</span><span style="color:var(--green)">৳ ${fmt(userBalance)}</span></div>
+    <div class="confirm-row"><span class="text-muted">Timestamp</span><span class="text-mono">${new Date().toLocaleString()}</span></div>`;
+  document.getElementById('txReceiptBox').innerHTML = receipt;
+  document.getElementById('txStep2').classList.remove('active');
+  document.getElementById('txStep3').classList.add('active');
+  showToast('Transfer completed successfully!', 'success');
+}
+function txReset() {
+  document.getElementById('txStep3').classList.remove('active');
+  document.getElementById('txStep1').classList.add('active');
+  document.getElementById('txRecipient').value='';
+  document.getElementById('txAmount').value='';
+  document.getElementById('txNote').value='';
+  document.getElementById('txBalanceDisplay').textContent='৳ '+fmt(userBalance);
+}
+
+// ===== TRANSACTION HISTORY =====
+function buildHistory() {
+  return `
+  <div class="panel-header">
+    <div class="panel-title">Transaction History</div>
+    <div class="panel-subtitle">Complete record of all your account activities</div>
+  </div>
+  <div class="filter-row">
+    <input class="search-input" id="txSearch" placeholder="🔍 Search transactions..." oninput="filterTx()" />
+    <select class="form-input-app" style="width:160px" id="txTypeFilter" onchange="filterTx()">
+      <option value="">All Types</option>
+      <option value="Credit">Credit</option>
+      <option value="Debit">Debit</option>
+    </select>
+    <select class="form-input-app" style="width:160px" id="txStatusFilter" onchange="filterTx()">
+      <option value="">All Status</option>
+      <option value="Completed">Completed</option>
+      <option value="Pending">Pending</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="filterTx()">Filter</button>
+  </div>
+  <div class="card">
+    <div class="table-wrap" id="txTableWrap"></div>
+  </div>`;
+}
+
+function renderTxnTable(data) {
+  const wrap = document.getElementById('txTableWrap');
+  if(!wrap) return;
+  if(!data.length) { wrap.innerHTML='<p style="padding:20px;color:var(--text-muted)">No transactions found.</p>'; return; }
+  wrap.innerHTML = `<table>
+    <thead><tr><th>ID</th><th>Date</th><th>Description</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead>
+    <tbody>${data.map(t=>`<tr>
+      <td class="text-mono" style="font-size:12px">${t.id}</td>
+      <td style="font-size:13px;color:var(--text-muted)">${t.date}</td>
+      <td>${t.desc}</td>
+      <td><span class="badge ${t.type==='Credit'?'badge-success':'badge-danger'}">${t.type}</span></td>
+      <td class="${t.amount>0?'amount-positive':'amount-negative'}">${t.amount>0?'+':''}৳${Math.abs(t.amount).toLocaleString()}</td>
+      <td><span class="badge badge-success">${t.status}</span></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function filterTx() {
+  const q = (document.getElementById('txSearch')||{}).value?.toLowerCase()||'';
+  const tp = (document.getElementById('txTypeFilter')||{}).value||'';
+  const st = (document.getElementById('txStatusFilter')||{}).value||'';
+  let data = txnList.filter(t=>{
+    const matchQ = !q || t.desc.toLowerCase().includes(q) || t.id.toLowerCase().includes(q);
+    const matchT = !tp || t.type===tp;
+    const matchS = !st || t.status===st;
+    return matchQ && matchT && matchS;
+  });
+  renderTxnTable(data);
+}
+
+// ===== STATEMENTS =====
+function buildStatements() {
+  return `
+  <div class="panel-header">
+    <div class="panel-title">Bank Statements</div>
+    <div class="panel-subtitle">Download filtered account statements</div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Generate Statement</div>
+      <div class="form-group-app">
+        <label class="form-label-app">From Date</label>
+        <input class="form-input-app" id="stFrom" type="date" value="2026-04-01" />
+      </div>
+      <div class="form-group-app">
+        <label class="form-label-app">To Date</label>
+        <input class="form-input-app" id="stTo" type="date" value="2026-04-25" />
+      </div>
+      <div class="form-group-app">
+        <label class="form-label-app">Transaction Type</label>
+        <select class="form-input-app" id="stType">
+          <option value="">All Transactions</option>
+          <option value="Credit">Credits Only</option>
+          <option value="Debit">Debits Only</option>
+        </select>
+      </div>
+      <div class="form-group-app">
+        <label class="form-label-app">Format</label>
+        <select class="form-input-app" id="stFormat">
+          <option>PDF Statement</option>
+          <option>CSV Export</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-accent" onclick="generateStatement()">📄 Generate</button>
+        <button class="btn btn-ghost" onclick="previewStatement()">👁 Preview</button>
+      </div>
+    </div>
+    <div class="card" id="stPreview">
+      <div class="card-title">Statement Summary</div>
+      <div style="text-align:center;padding:30px 0;color:var(--text-muted)">
+        <div style="font-size:40px;margin-bottom:12px">📋</div>
+        <div>Set filters and click Preview</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function previewStatement() {
+  const from = document.getElementById('stFrom').value;
+  const to = document.getElementById('stTo').value;
+  const type = document.getElementById('stType').value;
+  let filtered = txnList.filter(t => t.date>=from && t.date<=to && (!type||t.type===type));
+  const totalCredit = filtered.filter(t=>t.amount>0).reduce((a,b)=>a+b.amount,0);
+  const totalDebit = filtered.filter(t=>t.amount<0).reduce((a,b)=>a+Math.abs(b.amount),0);
+  const preview = document.getElementById('stPreview');
+  preview.innerHTML = `<div class="card-title">Statement Preview</div>
+    <div class="confirm-box">
+      <div class="confirm-row"><span class="text-muted">Account</span><span class="text-mono">ACC-2354934</span></div>
+      <div class="confirm-row"><span class="text-muted">Period</span><span>${from} → ${to}</span></div>
+      <div class="confirm-row"><span class="text-muted">Transactions</span><span>${filtered.length}</span></div>
+      <div class="confirm-row"><span class="text-muted">Total Credits</span><span class="amount-positive">+৳${totalCredit.toLocaleString()}</span></div>
+      <div class="confirm-row"><span class="text-muted">Total Debits</span><span class="amount-negative">-৳${totalDebit.toLocaleString()}</span></div>
+      <div class="confirm-row"><span class="text-muted">Net</span><span style="font-weight:700">৳${(totalCredit-totalDebit).toLocaleString()}</span></div>
+    </div>
+    <div class="table-wrap" style="margin-top:16px"><table>
+      <thead><tr><th>Date</th><th>Description</th><th>Amount</th></tr></thead>
+      <tbody>${filtered.map(t=>`<tr>
+        <td style="font-size:12px">${t.date}</td>
+        <td>${t.desc}</td>
+        <td class="${t.amount>0?'amount-positive':'amount-negative'}">${t.amount>0?'+':''}৳${Math.abs(t.amount).toLocaleString()}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+}
+
+function generateStatement() {
+  previewStatement();
+  setTimeout(()=>showToast('Statement ready for download', 'success'), 300);
+}
+
+// ===== PROFILE =====
+function buildProfile() {
+  const user = USERS[currentRole];
+  return `
+  <div class="panel-header">
+    <div class="panel-title">My Profile</div>
+    <div class="panel-subtitle">Manage your personal information and preferences</div>
+  </div>
+  <div class="profile-header">
+    <div class="profile-avatar-big">${user.name.charAt(0)}</div>
+    <div>
+      <div class="profile-name">${user.name}</div>
+      <div class="profile-meta">${user.id} · NexaBank Digital Finance Platform</div>
+      <div class="profile-tags">
+        <span class="badge badge-success">✓ Verified</span>
+        <span class="badge badge-info">${currentRole.charAt(0).toUpperCase()+currentRole.slice(1)}</span>
+        <span class="badge badge-warning">2FA Enabled</span>
+      </div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Personal Information</div>
+      <div class="form-group-app">
+        <label class="form-label-app">Full Name</label>
+        <input class="form-input-app" value="${user.name}" id="pName" />
+      </div>
+      <div class="form-group-app">
+        <label class="form-label-app">Email Address</label>
+        <input class="form-input-app" value="sabbir@aiub.edu" id="pEmail" />
+      </div>
+      <div class="form-group-app">
+        <label class="form-label-app">Phone</label>
+        <input class="form-input-app" value="+880 1700-000000" id="pPhone" />
+      </div>
+      <div class="form-group-app">
+        <label class="form-label-app">Address</label>
+        <input class="form-input-app" value="Dhaka, Bangladesh" id="pAddr" />
+      </div>
+      <button class="btn btn-accent" onclick="saveProfile()">Save Changes</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Security Settings</div>
+      <div class="form-group-app">
+        <label class="form-label-app">Current Password</label>
+        <input class="form-input-app" type="password" placeholder="••••••••" id="pCurrent" />
+      </div>
+      <div class="form-group-app">
+        <label class="form-label-app">New Password</label>
+        <input class="form-input-app" type="password" placeholder="Min 8 characters" id="pNew" />
+      </div>
+      <div class="form-group-app">
+        <label class="form-label-app">Confirm New Password</label>
+        <input class="form-input-app" type="password" placeholder="Repeat new password" id="pConfirm" />
+      </div>
+      <button class="btn btn-blue" onclick="changePassword()">Update Password</button>
+      <div class="divider"></div>
+      <div class="card-title">Notification Preferences</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+        ${['Email alerts on transactions','SMS for large transfers','Monthly statement email','Login notifications'].map((p,i)=>`
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px">
+          <input type="checkbox" ${i<2?'checked':''} style="accent-color:var(--accent);width:16px;height:16px" />
+          ${p}
+        </label>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function saveProfile() { showToast('Profile updated successfully', 'success'); }
+function changePassword() {
+  const cur = document.getElementById('pCurrent')?.value;
+  const nw = document.getElementById('pNew')?.value;
+  const cf = document.getElementById('pConfirm')?.value;
+  if(cur !== 'Sabbir') { showToast('Current password is incorrect', 'error'); return; }
+  if(nw !== cf) { showToast('Passwords do not match', 'error'); return; }
+  if(nw.length < 6) { showToast('Password too short', 'error'); return; }
+  showToast('Password changed successfully', 'success');
+}
+
+// ===== ADMIN DASHBOARD =====
+function buildAdminDash() {
+  return `
+  <div class="panel-header">
+    <div class="panel-title">Admin Dashboard</div>
+    <div class="panel-subtitle">Platform-wide overview and management console</div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card green">
+      <div class="stat-icon">👥</div>
+      <div class="stat-label">Total Accounts</div>
+      <div class="stat-value green">${accountList.length}</div>
+      <div class="stat-change">+2 pending approval</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon">✅</div>
+      <div class="stat-label">Active Accounts</div>
+      <div class="stat-value blue">${accountList.filter(a=>a.status==='Active').length}</div>
+      <div class="stat-change">1 suspended</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-icon">💰</div>
+      <div class="stat-label">Total Deposits</div>
+      <div class="stat-value gold">৳5.7M</div>
+      <div class="stat-change">↑ 8% this month</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-icon">⚠️</div>
+      <div class="stat-label">Flagged Alerts</div>
+      <div class="stat-value purple">2</div>
+      <div class="stat-change">Requires review</div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:14px">
+        <div class="card-title" style="margin:0">Recent Accounts</div>
+        <button class="btn btn-accent btn-sm" onclick="showModal('newAccount')">+ New Account</button>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Name</th><th>Status</th></tr></thead>
+        <tbody>${accountList.slice(0,5).map(a=>`<tr>
+          <td class="text-mono" style="font-size:12px">${a.id}</td>
+          <td>${a.name}</td>
+          <td><span class="account-status-dot dot-${a.status==='Active'?'green':a.status==='Suspended'?'red':'yellow'}"></span>${a.status}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Audit Log Snapshot</div>
+      ${AUDIT_LOG.slice(0,4).map(l=>`<div class="audit-entry">
+        <div class="audit-dot" style="background:${l.type==='success'?'var(--green)':l.type==='warning'?'var(--gold)':l.type==='danger'?'var(--red)':'var(--accent2)'}"></div>
+        <div><div class="audit-action" style="font-size:13px">${l.action}</div><div class="audit-time">${l.time}</div></div>
+      </div>`).join('')}
+      <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="currentRole==='admin'&&showPanel('fraud')">View Full Log →</button>
+    </div>
+  </div>`;
+}
+
+// ===== MANAGE ACCOUNTS =====
+function buildAccounts() {
+  return `
+  <div class="panel-header">
+    <div class="panel-title">Manage Accounts</div>
+    <div class="panel-subtitle">Create, update, and oversee all customer accounts</div>
+  </div>
+  <div class="filter-row">
+    <input class="search-input" id="accSearch" placeholder="🔍 Search accounts..." oninput="filterAccounts()" />
+    <select class="form-input-app" style="width:160px" id="accStatusFilter" onchange="filterAccounts()">
+      <option value="">All Status</option>
+      <option value="Active">Active</option>
+      <option value="Suspended">Suspended</option>
+      <option value="Pending">Pending</option>
+    </select>
+    <button class="btn btn-accent btn-sm" onclick="showModal('newAccount')">+ New Account</button>
+  </div>
+  <div class="card">
+    <div class="table-wrap" id="accTableWrap"></div>
+  </div>`;
+}
+
+function renderAccountTable(data) {
+  const wrap = document.getElementById('accTableWrap');
+  if(!wrap) return;
+  wrap.innerHTML = `<table>
+    <thead><tr><th>Account ID</th><th>Name</th><th>Type</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${data.map(a=>`<tr>
+      <td class="text-mono" style="font-size:12px">${a.id}</td>
+      <td>${a.name}</td>
+      <td><span class="badge badge-info">${a.type}</span></td>
+      <td class="text-mono" style="font-size:13px">৳${a.balance.toLocaleString()}</td>
+      <td><span class="badge ${a.status==='Active'?'badge-success':a.status==='Suspended'?'badge-danger':'badge-warning'}">${a.status}</span></td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="editAccount('${a.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="toggleAccount('${a.id}')">${a.status==='Suspended'?'Activate':'Suspend'}</button>
+      </td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function filterAccounts() {
+  const q = document.getElementById('accSearch')?.value.toLowerCase()||'';
+  const st = document.getElementById('accStatusFilter')?.value||'';
+  let data = accountList.filter(a=>(!q||a.name.toLowerCase().includes(q)||a.id.toLowerCase().includes(q))&&(!st||a.status===st));
+  renderAccountTable(data);
+}
+
+function editAccount(id) {
+  const a = accountList.find(x=>x.id===id);
+  showModal('editAccount', a);
+}
+
+function toggleAccount(id) {
+  const idx = accountList.findIndex(x=>x.id===id);
+  if(idx>=0) {
+    accountList[idx].status = accountList[idx].status==='Suspended' ? 'Active' : 'Suspended';
+    renderAccountTable(accountList);
+    showToast('Account status updated', 'success');
+  }
+}
+
+// ===== PENDING TX =====
+function buildPendingTx() {
+  const pending = [
+    { id:'TXN-P01', from:'ACC-5562403', to:'ACC-EXTERNAL', amount:210000, date:'2026-04-24', reason:'High-value international transfer' },
+    { id:'TXN-P02', from:'ACC-1234567', to:'ACC-2354934', amount:50000, date:'2026-04-25', reason:'New account first transfer' },
+  ];
+  return `
+  <div class="panel-header">
+    <div class="panel-title">Pending Transfers</div>
+    <div class="panel-subtitle">Review and approve high-value or flagged transfers</div>
+  </div>
+  ${pending.map(p=>`<div class="card" style="margin-bottom:16px">
+    <div class="flex-between" style="margin-bottom:12px">
+      <div>
+        <span class="badge badge-warning">Pending Review</span>
+        <span class="text-mono" style="margin-left:10px;font-size:12px">${p.id}</span>
+      </div>
+      <span style="font-size:12px;color:var(--text-muted)">${p.date}</span>
+    </div>
+    <div class="confirm-box">
+      <div class="confirm-row"><span class="text-muted">From</span><span class="text-mono">${p.from}</span></div>
+      <div class="confirm-row"><span class="text-muted">To</span><span class="text-mono">${p.to}</span></div>
+      <div class="confirm-row"><span class="text-muted">Amount</span><span style="font-weight:700;font-size:18px">৳ ${p.amount.toLocaleString()}</span></div>
+      <div class="confirm-row"><span class="text-muted">Reason</span><span>${p.reason}</span></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button class="btn btn-accent" onclick="approveTx('${p.id}',this)">✔ Approve</button>
+      <button class="btn btn-danger" onclick="rejectTx('${p.id}',this)">✕ Reject</button>
+    </div>
+  </div>`).join('')}`;
+}
+
+function approveTx(id, btn) {
+  btn.closest('.card').style.opacity='0.5';
+  btn.closest('.card').style.pointerEvents='none';
+  showToast(`Transfer ${id} approved`, 'success');
+}
+function rejectTx(id, btn) {
+  btn.closest('.card').style.opacity='0.5';
+  btn.closest('.card').style.pointerEvents='none';
+  showToast(`Transfer ${id} rejected`, 'error');
+}
+
+// ===== FRAUD MONITOR =====
+function buildFraud() {
+  return `
+  <div class="panel-header">
+    <div class="panel-title">Fraud Monitor</div>
+    <div class="panel-subtitle">Real-time suspicious activity detection and audit trail</div>
+  </div>
+  <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat-card gold"><div class="stat-icon">🚨</div><div class="stat-label">Active Alerts</div><div class="stat-value gold">2</div></div>
+    <div class="stat-card blue"><div class="stat-icon">🔍</div><div class="stat-label">Reviewed Today</div><div class="stat-value blue">7</div></div>
+    <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-label">Cleared This Week</div><div class="stat-value green">14</div></div>
+  </div>
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">Activity Alerts</div>
+    ${[
+      {type:'High-Value Transfer',msg:'৳210,000 transfer from ACC-5562403 flagged — exceeds daily limit',sev:'danger'},
+      {type:'New Account Transfer',msg:'First transfer from newly created ACC-1234567 for ৳50,000',sev:'warning'},
+    ].map(a=>`<div style="display:flex;gap:14px;align-items:flex-start;padding:14px;background:rgba(${a.sev==='danger'?'239,68,68':'245,158,11'},0.05);border:1px solid rgba(${a.sev==='danger'?'239,68,68':'245,158,11'},0.15);border-radius:10px;margin-bottom:10px">
+      <span style="font-size:20px">${a.sev==='danger'?'🔴':'🟡'}</span>
+      <div><div style="font-weight:600;font-size:14px">${a.type}</div><div style="font-size:13px;color:var(--text-muted);margin-top:3px">${a.msg}</div></div>
+    </div>`).join('')}
+  </div>
+  <div class="card">
+    <div class="card-title">Full Audit Log</div>
+    ${AUDIT_LOG.map(l=>`<div class="audit-entry">
+      <div class="audit-dot" style="background:${l.type==='success'?'var(--green)':l.type==='warning'?'var(--gold)':l.type==='danger'?'var(--red)':'var(--accent2)'}"></div>
+      <div><div class="audit-action">${l.action}</div><div class="audit-time">${l.time}</div></div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function initFraudChart(){}
+
+// ===== ANALYTICS =====
+function buildAnalytics() {
+  return `
+  <div class="panel-header">
+    <div class="panel-title">Business Intelligence</div>
+    <div class="panel-subtitle">Platform-wide financial analytics and deposit/withdrawal trends</div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card green"><div class="stat-icon">📈</div><div class="stat-label">Total Deposits (Apr)</div><div class="stat-value green">৳2.4M</div><div class="stat-change">↑ 18% MoM</div></div>
+    <div class="stat-card blue"><div class="stat-icon">📉</div><div class="stat-label">Total Withdrawals (Apr)</div><div class="stat-value blue">৳1.1M</div><div class="stat-change">↑ 5% MoM</div></div>
+    <div class="stat-card gold"><div class="stat-icon">🔄</div><div class="stat-label">Transfer Volume</div><div class="stat-value gold">৳890K</div><div class="stat-change">312 transactions</div></div>
+    <div class="stat-card purple"><div class="stat-icon">📊</div><div class="stat-label">Avg Account Balance</div><div class="stat-value purple">৳95K</div><div class="stat-change">Across all accounts</div></div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Monthly Deposit Trend</div>
+      <div id="depositChart" class="analytics-bar-chart"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Account Type Distribution</div>
+      <div class="analytics-bar-chart">
+        <div class="bar-row"><span class="bar-label">Savings</span><div class="bar-track"><div class="bar-fill" style="width:65%;background:var(--accent)"></div></div><span class="bar-val">65%</span></div>
+        <div class="bar-row"><span class="bar-label">Current</span><div class="bar-track"><div class="bar-fill" style="width:35%;background:var(--accent2)"></div></div><span class="bar-val">35%</span></div>
+      </div>
+      <div class="divider"></div>
+      <div class="card-title">Transaction Status</div>
+      <div class="analytics-bar-chart">
+        <div class="bar-row"><span class="bar-label">Completed</span><div class="bar-track"><div class="bar-fill" style="width:92%;background:var(--green)"></div></div><span class="bar-val">92%</span></div>
+        <div class="bar-row"><span class="bar-label">Pending</span><div class="bar-track"><div class="bar-fill" style="width:5%;background:var(--gold)"></div></div><span class="bar-val">5%</span></div>
+        <div class="bar-row"><span class="bar-label">Rejected</span><div class="bar-track"><div class="bar-fill" style="width:3%;background:var(--red)"></div></div><span class="bar-val">3%</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function initAnalyticsChart() {
+  const months = ['Nov','Dec','Jan','Feb','Mar','Apr'];
+  const vals = [1.8,2.0,1.5,2.2,2.1,2.4];
+  const max = Math.max(...vals);
+  const el = document.getElementById('depositChart');
+  if(!el) return;
+  el.innerHTML = months.map((m,i)=>`
+    <div class="bar-row">
+      <span class="bar-label">${m}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${(vals[i]/max*100).toFixed(0)}%;background:linear-gradient(90deg,var(--accent),var(--accent2))"></div></div>
+      <span class="bar-val">৳${vals[i]}M</span>
+    </div>`).join('');
+}
+
+// ===== AUDIT LOGS (AUDITOR) =====
+function buildAuditLogs() {
+  return `
+  <div class="panel-header">
+    <div class="panel-title">Audit Logs</div>
+    <div class="panel-subtitle">Comprehensive transaction audit trail for regulatory review</div>
+  </div>
+  <div class="filter-row">
+    <input class="search-input" id="logSearch" placeholder="🔍 Search logs..." oninput="filterLogs()" />
+    <select class="form-input-app" style="width:160px" id="logType" onchange="filterLogs()">
+      <option value="">All Types</option>
+      <option value="success">Success</option>
+      <option value="warning">Warning</option>
+      <option value="danger">Alert</option>
+      <option value="info">Info</option>
+    </select>
+  </div>
+  <div class="card" id="logContainer">
+    ${AUDIT_LOG.map(l=>`<div class="audit-entry" data-type="${l.type}" data-action="${l.action.toLowerCase()}">
+      <div class="audit-dot" style="background:${l.type==='success'?'var(--green)':l.type==='warning'?'var(--gold)':l.type==='danger'?'var(--red)':'var(--accent2)'}"></div>
+      <div style="flex:1">
+        <div class="flex-between">
+          <div class="audit-action">${l.action}</div>
+          <span class="badge ${l.type==='success'?'badge-success':l.type==='warning'?'badge-warning':l.type==='danger'?'badge-danger':'badge-info'}" style="font-size:10px">${l.type.toUpperCase()}</span>
+        </div>
+        <div class="audit-time">${l.time}</div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function filterLogs() {
+  const q = document.getElementById('logSearch')?.value.toLowerCase()||'';
+  const t = document.getElementById('logType')?.value||'';
+  document.querySelectorAll('#logContainer .audit-entry').forEach(el=>{
+    const matchQ = !q || el.dataset.action.includes(q);
+    const matchT = !t || el.dataset.type===t;
+    el.style.display = (matchQ&&matchT)?'':'none';
+  });
+}
+
+// ===== COMPLIANCE =====
+function buildCompliance() {
+  return `
+  <div class="panel-header">
+    <div class="panel-title">Compliance Overview</div>
+    <div class="panel-subtitle">Regulatory status and compliance metrics</div>
+  </div>
+  <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-label">Compliance Score</div><div class="stat-value green">98.2%</div></div>
+    <div class="stat-card blue"><div class="stat-icon">📋</div><div class="stat-label">Reports Filed</div><div class="stat-value blue">47</div></div>
+    <div class="stat-card gold"><div class="stat-icon">⏰</div><div class="stat-label">Next Audit Due</div><div class="stat-value gold" style="font-size:18px">15 Days</div></div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Regulatory Checklist</div>
+      ${[
+        ['AML Policy Active','Compliant'],
+        ['KYC Verification','Compliant'],
+        ['SSL/TLS Encryption','Active'],
+        ['Transaction Monitoring','Active'],
+        ['Data Privacy (PDPA)','Compliant'],
+        ['Suspicious Activity Reports','2 Pending'],
+      ].map(([item,status])=>`<div class="flex-between" style="padding:10px 0;border-bottom:1px solid rgba(31,45,69,0.5)">
+        <span style="font-size:14px">${item}</span>
+        <span class="compliance-tag">${status.includes('Pending')?'⚠️':'✓'} ${status}</span>
+      </div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-title">Recent Compliance Events</div>
+      ${AUDIT_LOG.filter(l=>l.type!=='info').map(l=>`<div class="audit-entry">
+        <div class="audit-dot" style="background:${l.type==='success'?'var(--green)':l.type==='warning'?'var(--gold)':'var(--red)'}"></div>
+        <div><div class="audit-action" style="font-size:13px">${l.action}</div><div class="audit-time">${l.time}</div></div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ===== REPORT GEN =====
+function buildReportGen() {
+  return `
+  <div class="panel-header">
+    <div class="panel-title">Generate Compliance Report</div>
+    <div class="panel-subtitle">Create regulatory reports for submission</div>
+  </div>
+  <div style="max-width:560px">
+    <div class="card">
+      <div class="card-title">Report Parameters</div>
+      <div class="form-group-app">
+        <label class="form-label-app">Report Type</label>
+        <select class="form-input-app" id="repType">
+          <option>Full Audit Report</option>
+          <option>AML Compliance Report</option>
+          <option>Suspicious Activity Report (SAR)</option>
+          <option>Transaction Summary</option>
+          <option>Account Status Report</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group-app">
+          <label class="form-label-app">From Date</label>
+          <input class="form-input-app" id="repFrom" type="date" value="2026-04-01" />
+        </div>
+        <div class="form-group-app">
+          <label class="form-label-app">To Date</label>
+          <input class="form-input-app" id="repTo" type="date" value="2026-04-25" />
+        </div>
+      </div>
+      <div class="form-group-app">
+        <label class="form-label-app">Output Format</label>
+        <select class="form-input-app" id="repFormat">
+          <option>PDF Report</option>
+          <option>CSV Data Export</option>
+          <option>Excel Workbook</option>
+        </select>
+      </div>
+      <div class="form-group-app">
+        <label class="form-label-app">Notes</label>
+        <input class="form-input-app" placeholder="Add compliance notes..." id="repNotes" />
+      </div>
+      <button class="btn btn-accent" onclick="generateReport()">📑 Generate Report</button>
+    </div>
+    <div class="card" id="repResult" style="display:none;margin-top:20px">
+      <div style="text-align:center;padding:16px">
+        <div style="font-size:40px;margin-bottom:12px">📑</div>
+        <div style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:6px" id="repTitle"></div>
+        <div style="color:var(--text-muted);font-size:13px;margin-bottom:16px" id="repMeta"></div>
+        <span class="compliance-tag">✓ Report Generated</span>
+        <div style="margin-top:16px;display:flex;gap:10px;justify-content:center">
+          <button class="btn btn-accent btn-sm">⬇ Download</button>
+          <button class="btn btn-ghost btn-sm">📧 Email Report</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function generateReport() {
+  const type = document.getElementById('repType').value;
+  const from = document.getElementById('repFrom').value;
+  const to = document.getElementById('repTo').value;
+  const format = document.getElementById('repFormat').value;
+  document.getElementById('repTitle').textContent = type;
+  document.getElementById('repMeta').textContent = `Period: ${from} → ${to} · Format: ${format} · Generated: ${new Date().toLocaleString()} · By: AUD-0001`;
+  document.getElementById('repResult').style.display='block';
+  showToast('Report generated successfully', 'success');
+}
+
+// ===================== MODAL =====================
+function showModal(type, data) {
+  const box = document.getElementById('modalContent');
+  if(type==='newAccount') {
+    box.innerHTML = `<div class="modal-title">Create New Account</div>
+      <div class="form-group-app"><label class="form-label-app">Full Name</label><input class="form-input-app" id="mName" placeholder="Customer full name" /></div>
+      <div class="form-group-app"><label class="form-label-app">Account Type</label><select class="form-input-app" id="mType"><option>Savings</option><option>Current</option></select></div>
+      <div class="form-group-app"><label class="form-label-app">Initial Deposit (BDT)</label><input class="form-input-app" id="mDeposit" type="number" placeholder="Minimum ৳500" /></div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-accent" onclick="createAccount()">Create Account</button>
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      </div>`;
+  } else if(type==='editAccount' && data) {
+    box.innerHTML = `<div class="modal-title">Edit Account</div>
+      <div style="margin-bottom:16px"><span class="text-mono" style="color:var(--accent)">${data.id}</span></div>
+      <div class="form-group-app"><label class="form-label-app">Name</label><input class="form-input-app" id="editName" value="${data.name}" /></div>
+      <div class="form-group-app"><label class="form-label-app">Account Type</label><select class="form-input-app" id="editType"><option ${data.type==='Savings'?'selected':''}>Savings</option><option ${data.type==='Current'?'selected':''}>Current</option></select></div>
+      <div class="form-group-app"><label class="form-label-app">Status</label><select class="form-input-app" id="editStatus">
+        <option ${data.status==='Active'?'selected':''}>Active</option>
+        <option ${data.status==='Suspended'?'selected':''}>Suspended</option>
+        <option ${data.status==='Pending'?'selected':''}>Pending</option>
+      </select></div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-accent" onclick="saveAccount('${data.id}')">Save Changes</button>
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      </div>`;
+  }
+  document.getElementById('modalOverlay').classList.add('active');
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+
+function createAccount() {
+  const name = document.getElementById('mName').value.trim();
+  const type = document.getElementById('mType').value;
+  const dep = parseFloat(document.getElementById('mDeposit').value)||0;
+  if(!name) { showToast('Please enter account holder name', 'error'); return; }
+  if(dep<500) { showToast('Minimum initial deposit is ৳500', 'error'); return; }
+  const newId = 'ACC-'+Math.floor(Math.random()*9000000+1000000);
+  accountList.push({ id:newId, name, type, balance:dep, status:'Pending', joined:new Date().toISOString().slice(0,10) });
+  closeModal();
+  showToast(`Account ${newId} created successfully`, 'success');
+  if(currentPanel==='accounts') renderAccountTable(accountList);
+}
+
+function saveAccount(id) {
+  const idx = accountList.findIndex(x=>x.id===id);
+  if(idx>=0) {
+    accountList[idx].name = document.getElementById('editName').value;
+    accountList[idx].type = document.getElementById('editType').value;
+    accountList[idx].status = document.getElementById('editStatus').value;
+    closeModal();
+    showToast('Account updated successfully', 'success');
+    if(currentPanel==='accounts') renderAccountTable(accountList);
+  }
+}
+
+// ===================== TOAST =====================
+let toastTimer;
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastText').textContent = msg;
+  document.getElementById('toastIcon').textContent = type==='success'?'✅':'❌';
+  t.className = type;
+  t.style.display='flex';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.style.display='none'; }, 3500);
+}
+
+// ===================== UTILS =====================
+function fmt(n) { return n.toLocaleString('en-BD',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+// Enter key on login
+document.getElementById('loginUsername').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('loginPassword').focus(); });
+</script>
+</body>
+</html>
+```
